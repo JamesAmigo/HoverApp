@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# VS Code settings
+.vscode/
+
+# macOS junk
+.DS_Store
+
+# PyInstaller builds
+dist/
+build/
+*.spec
+
+# Logs and caches
+*.log
+*.tmp
+.cache/
+*.egg-info/
