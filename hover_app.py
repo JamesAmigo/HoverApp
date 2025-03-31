@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QFileDialog, QMessageBox
 )
@@ -35,7 +36,7 @@ class ExcelHoverApp(QWidget):
         self.setLayout(layout)
 
     def choose_excel(self):
-        path, _ = QFileDialog.getOpenFileName(self, 'Open Excel File', '', 'Excel Files (*.xlsx *.xls)')
+        path, _ = QFileDialog.getOpenFileName(self, 'Open Excel File', '', 'Excel Files (*.xlsx *.xls *.xlsm)')
         if path:
             self.excel_path = path
             self.label.setText(f'Selected: {path.split("/")[-1]}')
@@ -46,9 +47,21 @@ class ExcelHoverApp(QWidget):
             QMessageBox.warning(self, 'No File', 'Please select an Excel file first.')
             return
 
-        QMessageBox.information(self, 'Started', 'Hover detection would start now (not yet implemented).')
-        # Here you’d launch the background hover detection thread in future
+        try:
+            df = pd.read_excel(self.excel_path, engine='openpyxl')
 
+            preview = df.head().to_string(index=False)
+            QMessageBox.information(
+                self,
+                'Excel Loaded',
+                f'Loaded {len(df)} rows.\n\nPreview:\n{preview}'
+            )
+
+            # We'll store this for use later in hover detection
+            self.dataframe = df
+
+        except Exception as e:
+            QMessageBox.critical(self, 'Error', f'Failed to load Excel file:\n{str(e)}')
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
