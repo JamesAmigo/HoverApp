@@ -5,10 +5,83 @@ from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
     QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox,
-    QDialog, QListWidget, QListWidgetItem, QLayout, QSizePolicy
+    QDialog, QListWidget, QListWidgetItem, QLayout, QSizePolicy,QScrollArea
 )
-from PyQt5.QtCore import Qt, QSize, QRect, QPoint
-from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtCore import Qt, QSize, QRect, QPoint, QTimer
+from PyQt5.QtGui import QFontMetrics, QFont, QMovie, QCursor, QClipboard
+
+
+class LoadingSpinner(QLabel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setAlignment(Qt.AlignCenter)
+
+        self.label = QLabel("Loading...")
+        self.label.setStyleSheet("font-size: 10pt; color: gray;")
+        self.label.setVisible(False)
+
+        self.spinner = QLabel()
+        self.spinner.setAlignment(Qt.AlignCenter)
+        self.spinner.setStyleSheet("background: transparent;")
+        self.spinner.setVisible(False)
+
+        self.movie = QMovie(os.path.join(os.path.dirname(__file__), "spinner.gif"))
+        self.movie.setScaledSize(QSize(24, 24))
+        self.spinner.setMovie(self.movie)
+
+        layout.addWidget(self.spinner)
+        layout.addWidget(self.label)
+
+        self.setVisible(False)
+
+
+    def start(self):
+        self.setVisible(True)
+        self.label.setVisible(True)
+        self.spinner.setVisible(True)
+        self.movie.start()
+
+    def stop(self):
+        self.movie.stop()
+        self.spinner.setVisible(False)
+        self.label.setVisible(False)
+        self.setVisible(False)
+class CopyableLabel(QLabel):
+    def __init__(self, text, parent=None):
+        super().__init__(text, parent)
+        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setCursor(Qt.IBeamCursor)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            QApplication.clipboard().setText(self.text())
+            self.show_copied_popup()
+        super().mousePressEvent(event)
+
+    def show_copied_popup(self):
+        popup = QLabel("Copied!", self.window())
+        popup.setStyleSheet(
+            "QLabel {"
+            "background-color: rgba(0, 0, 0, 180);"
+            "color: white;"
+            "padding: 4px 10px;"
+            "border-radius: 6px;"
+            "font-size: 9pt;"
+            "}"
+        )
+        popup.setWindowFlags(Qt.ToolTip)
+        popup.adjustSize()
+
+        # Position near the cursor
+        global_pos = QCursor.pos()
+        local_pos = self.window().mapFromGlobal(global_pos)
+        popup.move(self.window().mapToGlobal(local_pos + QPoint(10, 10)))
+        popup.show()
+
+        QTimer.singleShot(1000, popup.close)  # Auto-hide after 1 sec
+      
 
 class ColumnChip(QWidget):
     def __init__(self, column_name, remove_callback):
@@ -161,13 +234,13 @@ class ExcelFolderApp(QWidget):
     def init_ui(self):
         self.setWindowTitle('Excel Folder Search Tool')
         self.setMinimumWidth(700)
-
+        
 
         layout = QVBoxLayout()
 
         self.label_info = QLabel('No folder selected')
         self.label_info.setAlignment(Qt.AlignCenter)
-
+        
         self.btn_choose_folder = QPushButton('Choose Folder')
         self.btn_choose_folder.clicked.connect(self.choose_folder)
 
@@ -198,7 +271,11 @@ class ExcelFolderApp(QWidget):
         self.btn_add_column = QPushButton("Add Column")
         self.btn_add_column.clicked.connect(self.show_add_column_dialog)
 
+        # Add spinner
+        self.spinner = LoadingSpinner(self)
+        
         layout.addWidget(self.label_info)
+        layout.addWidget(self.spinner)
         layout.addWidget(self.btn_choose_folder)
         layout.addLayout(file_sheet_layout)
         layout.addLayout(search_layout)
@@ -231,12 +308,15 @@ class ExcelFolderApp(QWidget):
 
         self.file_dropdown.addItems(self.excel_files.keys())
         self.file_dropdown.setEnabled(True)
+        
 
     def on_file_selected(self, index):
         self.sheet_dropdown.clear()
         self.sheet_dropdown.setEnabled(False)
         self.current_df = None
 
+        self.spinner.start()
+        QApplication.processEvents()
         if index < 0:
             return
 
@@ -249,8 +329,13 @@ class ExcelFolderApp(QWidget):
             self.sheet_dropdown.setEnabled(True)
         except Exception as e:
             self.label_info.setText(f'Error loading file: {str(e)}')
+        
+        self.spinner.stop()
 
     def on_sheet_selected(self, index):
+        
+        self.spinner.start()
+        QApplication.processEvents()
         if index < 0:
             return
 
@@ -269,6 +354,8 @@ class ExcelFolderApp(QWidget):
         except Exception as e:
             print(f'Error reading sheet: {str(e)}')
             self.label_info.setText(f'Error reading sheet: {str(e)}')
+        
+        self.spinner.stop()
 
     def clean_column_name(self, name):
         if not isinstance(name, str):
@@ -286,6 +373,7 @@ class ExcelFolderApp(QWidget):
         for col in self.shown_columns:
             chip = ColumnChip(col, self.remove_column_from_scope)
             self.chip_layout.addWidget(chip)
+            
 
     def clear_chips(self):
         while self.chip_layout.count():
@@ -326,17 +414,22 @@ class ExcelFolderApp(QWidget):
             row = matches.iloc[0]
             row_dict = row.to_dict()
 
-            formatted = "\n".join(
-                f"{k}: {v}" for k, v in row_dict.items()
+            display_dict = {
+                k: v for k, v in row_dict.items()
                 if k in self.shown_columns and pd.notna(v) and str(v).strip() != "" and not all(c.upper() == 'X' for c in str(v).strip())
-            )
+            }
 
-            msg_box = QMessageBox(self)
-            msg_box.setWindowTitle(f"Search Result: {search_term}")
-            msg_box.setText(formatted)
-            msg_box.setStandardButtons(QMessageBox.Close)
-            msg_box.setModal(False)
-            msg_box.show()
+
+            if not hasattr(self, 'open_result_dialogs'):
+                self.open_result_dialogs = []
+
+            dialog = ResultDialog(f"Search Result: {search_term}", row_dict, self.shown_columns)
+            dialog.setModal(False)
+            dialog.show()
+# Keep a reference
+            self.open_result_dialogs.append(dialog)
+
+
         else:
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("No Match")
@@ -344,9 +437,117 @@ class ExcelFolderApp(QWidget):
             msg_box.setStandardButtons(QMessageBox.Close)
             msg_box.setModal(False)
             msg_box.show()
+class ResultDialog(QDialog):
+    def __init__(self, title, row_dict, shown_columns):
+        super().__init__()
+        self.setWindowTitle(title)
+        self.setFixedHeight(600)
+        self.setMinimumWidth(500)
 
+        self.row_dict = row_dict
+        self.shown_columns = shown_columns
+        self.show_all = False
+
+        self.main_layout = QVBoxLayout()
+        self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
+
+        self.content_widget = QWidget()
+        self.content_layout = QVBoxLayout()
+        self.content_widget.setLayout(self.content_layout)
+        self.scroll_area.setWidget(self.content_widget)
+
+        self.main_layout.addWidget(self.scroll_area)
+
+        # Buttons
+        button_row = QHBoxLayout()
+        self.toggle_btn = QPushButton("Show All Fields")
+        self.toggle_btn.clicked.connect(self.toggle_all_fields)
+
+        self.close_btn = QPushButton("Close")
+        self.close_btn.clicked.connect(self.close)
+
+        button_row.addWidget(self.toggle_btn)
+        button_row.addStretch()
+        button_row.addWidget(self.close_btn)
+
+        self.main_layout.addLayout(button_row)
+        self.setLayout(self.main_layout)
+
+        self.render_content()
+
+    def render_content(self):
+        # Clear previous layout
+        self.clear_layout(self.content_layout)
+
+
+        for key, value in self.row_dict.items():
+            key_str = str(key)
+            value_str = str(value)
+
+            row = QHBoxLayout()
+            label_key = CopyableLabel(key_str)
+
+            label_key.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            label_value = CopyableLabel(value_str)
+            label_value.setWordWrap(True)
+            label_value.setTextInteractionFlags(Qt.TextSelectableByMouse)
+            
+            key_styles = [
+                "font-weight: bold",
+                "font-size: 10pt",
+                "border: 1px solid #ccc",
+                "padding: 4px",
+                "border-radius: 6px",
+            ]
+
+            value_styles = [
+                "font-size: 8pt",
+                "padding: 4px"
+            ]
+
+            if self.show_all:
+                if key_str not in self.shown_columns:
+                    key_styles.append("background-color: #e0e0e0")
+                elif (not pd.notna(value)) or value_str.strip() == "" or all(c.upper() == 'X' for c in value_str.strip()):
+                    key_styles.append("color: white; background-color: #868686")
+                    label_value.setText("-")
+                else:
+                    key_styles.append("background-color: #f2f2f2")
+
+            else:
+                if key_str not in self.shown_columns:
+                    continue
+                if (not pd.notna(value)) or value_str.strip() == "" or all(c.upper() == 'X' for c in value_str.strip()):
+                    continue
+
+            label_key.setStyleSheet("; ".join(key_styles))
+            label_value.setStyleSheet("; ".join(value_styles))
+
+            label_key.setFixedWidth(150)
+            row.addWidget(label_key)
+            row.addWidget(label_value)
+            self.content_layout.addLayout(row)
+    def toggle_all_fields(self):
+        self.show_all = not self.show_all
+        self.toggle_btn.setText("Show Only Selected" if self.show_all else "Show All Fields")
+        self.render_content()
+    def clear_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                # it's likely a nested layout
+                sub_layout = item.layout()
+                if sub_layout is not None:
+                    self.clear_layout(sub_layout)
+
+        
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setFont(QFont("微軟正黑體", 10))
     window = ExcelFolderApp()
     window.show()
     sys.exit(app.exec_())
