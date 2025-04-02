@@ -234,28 +234,58 @@ class ExcelFolderApp(QWidget):
     def init_ui(self):
         self.setWindowTitle('Excel Folder Search Tool')
         self.setMinimumWidth(700)
-        
 
         layout = QVBoxLayout()
 
-        self.label_info = QLabel('No folder selected')
-        self.label_info.setAlignment(Qt.AlignCenter)
-        
-        self.btn_choose_folder = QPushButton('Choose Folder')
-        self.btn_choose_folder.clicked.connect(self.choose_folder)
+        # Folder Row (Label + Button + File/Sheet Layout)
+        folder_row = QHBoxLayout()
 
-        file_sheet_layout = QHBoxLayout()
+        self.label_info = QLabel('No folder selected')
+        self.label_info.setMinimumWidth(100)
+        self.label_info.setMaximumWidth(200)
+        folder_row.addWidget(self.label_info)
+
+        self.btn_choose_folder = QPushButton('Choose Folder')
+        self.btn_choose_folder.setMinimumSize(100, 30)
+        self.btn_choose_folder.setMaximumSize(150, 60)
+        self.btn_choose_folder.clicked.connect(self.choose_folder)
+        folder_row.addWidget(self.btn_choose_folder)
+
+        # File/Sheet nested layout
+        file_sheet_grid = QVBoxLayout()
+
+        top_row = QHBoxLayout()
+        bottom_row = QHBoxLayout()
+
+        file_label = QLabel("File name:")
+        file_label.setFixedSize(70, 30)
         self.file_dropdown = QComboBox()
         self.file_dropdown.setEnabled(False)
         self.file_dropdown.currentIndexChanged.connect(self.on_file_selected)
 
+        sheet_label = QLabel("Sheet name:")
+        sheet_label.setFixedSize(70, 30)
         self.sheet_dropdown = QComboBox()
         self.sheet_dropdown.setEnabled(False)
         self.sheet_dropdown.currentIndexChanged.connect(self.on_sheet_selected)
 
-        file_sheet_layout.addWidget(self.file_dropdown)
-        file_sheet_layout.addWidget(self.sheet_dropdown)
+        top_row.addWidget(file_label)
+        top_row.addWidget(self.file_dropdown)
 
+        bottom_row.addWidget(sheet_label)
+        bottom_row.addWidget(self.sheet_dropdown)
+
+        file_sheet_grid.addLayout(top_row)
+        file_sheet_grid.addLayout(bottom_row)
+
+        folder_row.addLayout(file_sheet_grid)
+        layout.addLayout(folder_row)
+
+        # Spinner
+        self.spinner = LoadingSpinner(self)
+        layout.addWidget(self.spinner)
+
+        # Search row
         search_layout = QHBoxLayout()
         self.input_search = QLineEdit()
         self.input_search.setPlaceholderText("Enter index to search")
@@ -264,6 +294,7 @@ class ExcelFolderApp(QWidget):
         search_layout.addWidget(self.input_search)
         search_layout.addWidget(self.btn_search)
 
+        # Column chips
         self.chip_container_widget = QWidget()
         self.chip_layout = FlowLayout()
         self.chip_container_widget.setLayout(self.chip_layout)
@@ -271,13 +302,6 @@ class ExcelFolderApp(QWidget):
         self.btn_add_column = QPushButton("Add Column")
         self.btn_add_column.clicked.connect(self.show_add_column_dialog)
 
-        # Add spinner
-        self.spinner = LoadingSpinner(self)
-        
-        layout.addWidget(self.label_info)
-        layout.addWidget(self.spinner)
-        layout.addWidget(self.btn_choose_folder)
-        layout.addLayout(file_sheet_layout)
         layout.addLayout(search_layout)
         layout.addWidget(self.chip_container_widget)
         layout.addWidget(self.btn_add_column)
