@@ -567,11 +567,3 @@ class ResultDialog(QDialog):
                 sub_layout = item.layout()
                 if sub_layout is not None:
                     self.clear_layout(sub_layout)
-
-        
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    app.setFont(QFont("微軟正黑體", 10))
-    window = ExcelFolderApp()
-    window.show()
-    sys.exit(app.exec_())
