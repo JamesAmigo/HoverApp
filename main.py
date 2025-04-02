@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QFont
 import sys
-from hover_app import ExcelFolderApp
+from ui_main import ExcelFolderApp
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
