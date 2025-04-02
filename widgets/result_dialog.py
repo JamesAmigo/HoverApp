@@ -11,8 +11,9 @@ class ResultDialog(QDialog):
     def __init__(self, title, row_dict, shown_columns):
         super().__init__()
         self.setWindowTitle(title)
-        self.setFixedHeight(600)
-        self.setMinimumWidth(500)
+        self.setMinimumHeight(200)
+        self.setMinimumWidth(300)
+        self.setMaximumHeight(600)
 
         self.row_dict = row_dict
         self.shown_columns = shown_columns
@@ -49,6 +50,7 @@ class ResultDialog(QDialog):
     def render_content(self):
         # Clear previous layout
         self.clear_layout(self.content_layout)
+        self.content_layout.setAlignment(Qt.AlignTop)
 
 
         for key, value in self.row_dict.items():
@@ -95,6 +97,8 @@ class ResultDialog(QDialog):
             label_value.setStyleSheet("; ".join(value_styles))
 
             label_key.setFixedWidth(150)
+            label_key.setFixedHeight(30)
+            label_value.setFixedHeight(30)
             row.addWidget(label_key)
             row.addWidget(label_value)
             self.content_layout.addLayout(row)
