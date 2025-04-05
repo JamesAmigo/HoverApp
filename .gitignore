@@ -23,3 +23,8 @@ build/
 *.tmp
 .cache/
 *.egg-info/
+
+
+# Ignore user config
+*.json
+!.theme_config.json

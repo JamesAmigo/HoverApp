@@ -97,7 +97,7 @@ QLabel[role="key"][status="empty"] {
     font-size: 10pt;
     border: 1px solid #ccc;
     color: white;
-    background-color: #868686;
+    background-color: #252525;
     padding: 4px;
     border-radius: 6px;
 }

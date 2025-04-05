@@ -73,7 +73,7 @@ QScrollBar:vertical {
 QLabel[role="key"][status="normal"] {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ffbcbc;
+    border: 1px solid #ff9f9f;
     padding: 4px;
     border-radius: 6px;
     background-color: #ffbcbc;
@@ -83,8 +83,8 @@ QLabel[role="key"][status="normal"] {
 QLabel[role="key"][status="hidden"] {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ccc;
-    color: gray;
+    border: 1px solid #ff9f9f;
+    color: #bb7979;
     background-color: transparent;
     padding: 4px;
     border-radius: 6px;
@@ -94,9 +94,9 @@ QLabel[role="key"][status="hidden"] {
 QLabel[role="key"][status="empty"] {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ccc;
+    border: 1px solid #ff9f9f;
     color: white;
-    background-color: #868686;
+    background-color: #857474;
     padding: 4px;
     border-radius: 6px;
 }

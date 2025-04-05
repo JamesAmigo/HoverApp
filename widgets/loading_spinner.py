@@ -3,6 +3,7 @@ import os
 from PyQt5.QtWidgets import QHBoxLayout, QLabel
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QMovie
+from utilities.resource_utils import get_resource_path
 
 
 class LoadingSpinner(QLabel):
@@ -21,9 +22,7 @@ class LoadingSpinner(QLabel):
         self.spinner.setStyleSheet("background: transparent;")
         self.spinner.setVisible(False)
 
-        spinner_path = os.path.normpath(
-            os.path.join(os.path.dirname(__file__), "..", "Resources", "spinner.gif")
-        )
+        spinner_path = get_resource_path("Resources/spinner.gif")
         self.movie = QMovie(spinner_path)
 
         self.movie.setScaledSize(QSize(24, 24))

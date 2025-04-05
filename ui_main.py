@@ -7,14 +7,14 @@ from widgets.flow_layout import FlowLayout
 from widgets.add_column_dialog import AddColumnDialog
 from widgets.column_chip import ColumnChip
 from widgets.result_dialog import ResultDialog
-from utilities.theme_utils import load_stylesheet, save_theme_preference, load_theme_preference
+from utilities.resource_utils import load_stylesheet, save_theme_preference, load_theme_preference
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
     QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox
 )
 from PyQt5.QtCore import Qt
-
+from PyQt5.QtGui import QIcon
 
 class ExcelFolderApp(QWidget):
     def __init__(self):
@@ -301,7 +301,6 @@ class ExcelFolderApp(QWidget):
         
         save_theme_preference(self.current_theme)
     def update_theme_icon(self):
-        print (self.current_theme)
         match self.current_theme:
             case "light":
                 self.theme_switch.setText("🌸")
