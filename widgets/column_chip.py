@@ -20,17 +20,11 @@ class ColumnChip(QWidget):
         self.setLayout(layout)
 
         self.setStyleSheet("""
-            QWidget {
-                border: 1px solid gray;
-                border-radius: 10px;
-                padding: 2px 4px;
-            }
             QPushButton {
-                border: 1px solid #999;
                 border-radius: 10px;
                 padding: 2px 6px;
-                min-width: 16px;
-                min-height: 16px;
+                min-width: 20px;
+                min-height: 20px;
             }
 
         """)

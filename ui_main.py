@@ -287,13 +287,28 @@ class ExcelFolderApp(QWidget):
             msg_box.show()
 
     def toggle_theme_icon(self):
-        self.current_theme = "dark" if self.current_theme == "light" else "light"
-        self.apply_theme(self.current_theme)
-        self.update_theme_icon()
+        match self.current_theme:
+            case "light":
+                self.current_theme = "pink"
+                self.apply_theme("pink")
+            case "pink":
+                self.current_theme = "dark"
+                self.apply_theme("dark")
+            case "dark":
+                self.current_theme = "light"
+                self.apply_theme("light")
+        
+        
         save_theme_preference(self.current_theme)
     def update_theme_icon(self):
-        icon = "🌙" if self.current_theme == "light" else "🔅"
-        self.theme_switch.setText(icon)
+        print (self.current_theme)
+        match self.current_theme:
+            case "light":
+                self.theme_switch.setText("🌸")
+            case "pink":
+                self.theme_switch.setText("🌙")
+            case "dark":
+                self.theme_switch.setText("🔅")
 
     def apply_theme(self, theme_name):
         if theme_name in self.themes:

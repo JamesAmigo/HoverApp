@@ -3,7 +3,7 @@
    =============================== */
 
 QWidget {
-    background-color: #fefefe;
+    background-color: #ffdbdd;
     color: #2b2b2b;
 }
 
@@ -14,8 +14,8 @@ QWidget {
 QLineEdit,
 QComboBox,
 QListWidget {
-    background-color: #ffffff;
-    border: 1px solid #ccc;
+    background-color: #fff7f7;
+    border: 1px solid #ffbcbc;
     padding: 4px;
 }
 
@@ -24,46 +24,44 @@ QListWidget {
    =============================== */
 
 QPushButton {
-    background-color: #eeeeee;
-    color: #222;
-    border-radius: 6px;
-    padding: 6px 12px;
-}
-
-QPushButton:hover {
-    background-color: #dddddd;
-}
-
-QPushButton:pressed {
-    background-color: #bbbbbb;
-}
-
-/* ===============================
-   🌸 Theme Toggle Button (Pink Style)
-   =============================== */
-
-QPushButton[role="ThemeSwitch"] {
     background-color: #ffbcbc;
     color: #222;
     border-radius: 6px;
     padding: 6px 12px;
 }
 
-QPushButton[role="ThemeSwitch"]:hover {
+QPushButton:hover {
     background-color: #ffffc4c4;
 }
 
-QPushButton[role="ThemeSwitch"]:pressed {
+QPushButton:pressed {
     background-color: #ffa6a6;
 }
+/* ===============================
+   🌙 Theme Toggle Button
+   =============================== */
 
+QPushButton[role="ThemeSwitch"] {
+    background-color: #444;
+    color: white;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+QPushButton[role="ThemeSwitch"]:hover {
+    background-color: #555;
+}
+
+QPushButton[role="ThemeSwitch"]:pressed {
+    background-color: #333;
+}
 
 /* ===============================
    🖱 Scrollbars
    =============================== */
 
 QScrollBar:vertical {
-    background: #f0f0f0;
+    background: #ffbcbc;
     width: 10px;
 }
 
@@ -75,10 +73,10 @@ QScrollBar:vertical {
 QLabel[role="key"][status="normal"] {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ccc;
+    border: 1px solid #ffbcbc;
     padding: 4px;
     border-radius: 6px;
-    background-color: #f2f2f2;
+    background-color: #ffbcbc;
 }
 
 /* Result Dialog Columns that is not chosen (Hidden) */
