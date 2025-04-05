@@ -1,16 +1,19 @@
 import sys
 import os
+import json
 import pandas as pd
 from widgets.loading_spinner import LoadingSpinner
 from widgets.flow_layout import FlowLayout
 from widgets.add_column_dialog import AddColumnDialog
 from widgets.column_chip import ColumnChip
 from widgets.result_dialog import ResultDialog
+from utilities.theme_utils import load_stylesheet, save_theme_preference, load_theme_preference
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
-    QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox,
+    QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox
 )
+from PyQt5.QtCore import Qt
 
 
 class ExcelFolderApp(QWidget):
@@ -19,6 +22,14 @@ class ExcelFolderApp(QWidget):
         self.excel_files = {}
         self.current_df = None
         self.shown_columns = []
+        self.themes = {}
+        resources_path = os.path.join(os.path.dirname(__file__), "Resources")
+        for filename in os.listdir(resources_path):
+            if filename.endswith(".qss"):
+                theme_name = filename.split(".")[0]
+                full_path = os.path.join(resources_path, filename)
+                self.themes[theme_name] = load_stylesheet(full_path)
+
 
         self.init_ui()
 
@@ -71,6 +82,20 @@ class ExcelFolderApp(QWidget):
         file_sheet_grid.addLayout(bottom_row)
 
         folder_row.addLayout(file_sheet_grid)
+
+        self.theme_switch = QPushButton("🌙")
+        self.theme_switch.setFixedSize(40, 40)
+        self.theme_switch.setToolTip("Toggle Light/Dark Theme")
+        self.theme_switch.clicked.connect(self.toggle_theme_icon)
+        # Apply saved theme
+        self.current_theme = load_theme_preference()
+        self.apply_theme(self.current_theme)
+        self.update_theme_icon()
+
+        folder_row.addWidget(self.theme_switch)
+
+
+
         layout.addLayout(folder_row)
 
         # Spinner
@@ -258,3 +283,25 @@ class ExcelFolderApp(QWidget):
             msg_box.setStandardButtons(QMessageBox.Close)
             msg_box.setModal(False)
             msg_box.show()
+
+    def toggle_theme_icon(self):
+        self.current_theme = "dark" if self.current_theme == "light" else "light"
+        self.apply_theme(self.current_theme)
+        self.update_theme_icon()
+        save_theme_preference(self.current_theme)
+    def update_theme_icon(self):
+        icon = "🌙" if self.current_theme == "light" else "🔅"
+        self.theme_switch.setText(icon)
+
+    def apply_theme(self, theme_name):
+        if theme_name in self.themes:
+            QApplication.instance().setStyleSheet(self.themes[theme_name])
+            self.current_theme = theme_name
+            save_theme_preference(theme_name)
+            self.update_theme_icon()
+        else:
+            print(f"Theme '{theme_name}' not found.")
+
+    def handle_theme_toggle(self, value):
+        theme = "dark" if value == 1 else "light"
+        self.apply_theme(theme)

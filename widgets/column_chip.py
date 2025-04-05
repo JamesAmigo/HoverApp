@@ -24,22 +24,13 @@ class ColumnChip(QWidget):
                 border: 1px solid gray;
                 border-radius: 10px;
                 padding: 2px 4px;
-                background-color: #f0f0f0;
             }
             QPushButton {
-                background-color: #e0e0e0;
                 border: 1px solid #999;
                 border-radius: 10px;
                 padding: 2px 6px;
                 min-width: 16px;
                 min-height: 16px;
-            }
-            QPushButton:hover {
-                background-color: #d0d0d0;
-                border-color: #666;
-            }
-            QPushButton:pressed {
-                background-color: #bbbbbb;
             }
 
         """)

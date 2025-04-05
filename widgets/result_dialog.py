@@ -11,7 +11,7 @@ class ResultDialog(QDialog):
     def __init__(self, title, row_dict, shown_columns):
         super().__init__()
         self.setWindowTitle(title)
-        self.setMinimumHeight(200)
+        self.setMinimumHeight(250)
         self.setMinimumWidth(300)
         self.setMaximumHeight(600)
 
@@ -64,37 +64,28 @@ class ResultDialog(QDialog):
             label_value = CopyableLabel(value_str)
             label_value.setWordWrap(True)
             label_value.setTextInteractionFlags(Qt.TextSelectableByMouse)
-            
-            key_styles = [
-                "font-weight: bold",
-                "font-size: 10pt",
-                "border: 1px solid #ccc",
-                "padding: 4px",
-                "border-radius: 6px",
-            ]
+            label_key.setProperty("role", "key")
+            label_value.setProperty("role", "value")
 
-            value_styles = [
-                "font-size: 8pt",
-                "padding: 4px"
-            ]
-
+            # Customize status
             if self.show_all:
                 if key_str not in self.shown_columns:
-                    key_styles.append("background-color: #e0e0e0")
+                    label_key.setProperty("status", "hidden")
                 elif (not pd.notna(value)) or value_str.strip() == "" or all(c.upper() == 'X' for c in value_str.strip()):
-                    key_styles.append("color: white; background-color: #868686")
+                    label_key.setProperty("status", "empty")
                     label_value.setText("-")
                 else:
-                    key_styles.append("background-color: #f2f2f2")
-
+                    label_key.setProperty("status", "normal")
             else:
                 if key_str not in self.shown_columns:
                     continue
                 if (not pd.notna(value)) or value_str.strip() == "" or all(c.upper() == 'X' for c in value_str.strip()):
                     continue
+                label_key.setProperty("status", "normal")
 
-            label_key.setStyleSheet("; ".join(key_styles))
-            label_value.setStyleSheet("; ".join(value_styles))
+
+            label_key.style().unpolish(label_key)
+            label_key.style().polish(label_key)
 
             label_key.setFixedWidth(150)
             label_key.setFixedHeight(30)
