@@ -11,6 +11,7 @@ class AddColumnDialog(QDialog):
 
         layout = QVBoxLayout()
         self.list_widget = QListWidget()
+        self.list_widget.setSelectionMode(QListWidget.MultiSelection)
 
         for col in available_columns:
             item = QListWidgetItem(col)
