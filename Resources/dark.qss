@@ -16,6 +16,23 @@ QPushButton {
 QPushButton:hover {
     background-color: #555;
 }
+QPushButton:pressed {
+    background-color: #333;
+}
+
+QPushButton[role="ThemeSwitch"] {
+    background-color: #eeeeee;
+    color: #222;
+    border-radius: 6px;
+    padding: 6px 12px;
+}
+
+QPushButton[role="ThemeSwitch"]:hover {
+    background-color: #dddddd;
+}
+QPushButton[role="ThemeSwitch"]:pressed {
+    background-color: #bbbbbb;
+}
 QScrollBar:vertical {
     background: #2b2b2b;
     width: 10px;

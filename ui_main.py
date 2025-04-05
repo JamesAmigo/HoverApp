@@ -87,6 +87,8 @@ class ExcelFolderApp(QWidget):
         self.theme_switch.setFixedSize(40, 40)
         self.theme_switch.setToolTip("Toggle Light/Dark Theme")
         self.theme_switch.clicked.connect(self.toggle_theme_icon)
+        self.theme_switch.setProperty("role", "ThemeSwitch")
+
         # Apply saved theme
         self.current_theme = load_theme_preference()
         self.apply_theme(self.current_theme)
