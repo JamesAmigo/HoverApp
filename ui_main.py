@@ -25,6 +25,7 @@ class ExcelFolderApp(QWidget):
     def init_ui(self):
         self.setWindowTitle('Excel Folder Search Tool')
         self.setMinimumWidth(700)
+        self.setMinimumHeight(300)
 
         layout = QVBoxLayout()
 
@@ -104,7 +105,7 @@ class ExcelFolderApp(QWidget):
         if not folder:
             return
 
-        self.label_info.setText(f'Selected folder: {folder}')
+        self.label_info.setText(f'Selected folder: \n{folder}')
         self.excel_files.clear()
         self.file_dropdown.clear()
         self.sheet_dropdown.clear()
@@ -164,6 +165,11 @@ class ExcelFolderApp(QWidget):
         try:
             df = pd.read_excel(file_path, sheet_name=sheet, header=1, engine='openpyxl')
             df.columns = [self.clean_column_name(col) for col in df.columns]
+
+            # Drop columns that are unnamed or fully empty
+            df = df.loc[:, ~df.columns.str.contains(r'^Unnamed', case=False)]
+            df = df.dropna(axis=1, how='all')  # optional: remove columns where all rows are NaN
+
             self.current_df = df
             self.update_column_scope()
         except Exception as e:
