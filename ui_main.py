@@ -7,20 +7,22 @@ from widgets.flow_layout import FlowLayout
 from widgets.add_column_dialog import AddColumnDialog
 from widgets.column_chip import ColumnChip
 from widgets.result_dialog import ResultDialog
-from utilities.resource_utils import load_stylesheet, save_theme_preference, load_theme_preference
+from utilities.theme_utils import load_stylesheet, save_theme_preference, load_theme_preference
+from utilities.sheet_header_utils import get_header_index, set_header_index
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
     QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox, QTabWidget
 )
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QIntValidator
 
 class ExcelFolderApp(QWidget):
     def __init__(self):
         super().__init__()
         self.excel_files = {}
         self.current_df = None
+        self.current_header_row = 2
         self.shown_columns = []
         self.themes = {}
         resources_path = os.path.join(os.path.dirname(__file__), "Resources")
@@ -29,7 +31,6 @@ class ExcelFolderApp(QWidget):
                 theme_name = filename.split(".")[0]
                 full_path = os.path.join(resources_path, filename)
                 self.themes[theme_name] = load_stylesheet(full_path)
-
 
         self.init_ui()
 
@@ -40,16 +41,13 @@ class ExcelFolderApp(QWidget):
 
         main_layout = QVBoxLayout()
 
-        # --- Folder Row ---
         folder_row = QHBoxLayout()
-
 
         self.btn_choose_folder = QPushButton('Choose Folder')
         self.btn_choose_folder.setMinimumSize(100, 30)
         self.btn_choose_folder.setMaximumSize(150, 60)
         self.btn_choose_folder.clicked.connect(self.choose_folder)
         folder_row.addWidget(self.btn_choose_folder)
-
 
         self.label_info = QLabel('No folder selected')
         self.label_info.setMinimumWidth(100)
@@ -71,50 +69,55 @@ class ExcelFolderApp(QWidget):
         main_layout.addLayout(folder_row)
         main_layout.addSpacing(10)
 
-        # --- Tab Widget ---
         self.tabs = QTabWidget()
         main_layout.addWidget(self.tabs)
 
-        # === Tab 1: Search Tab ===
         search_tab = QWidget()
         search_tab_layout = QVBoxLayout()
 
-        # File/Sheet Dropdowns
         file_sheet_layout = QVBoxLayout()
 
         top_row = QHBoxLayout()
-        file_label = QLabel("File name:")
-        file_label.setFixedSize(70, 30)
+        file_label = QLabel("File Name:")
+        file_label.setFixedSize(80, 30)
         self.file_dropdown = QComboBox()
         self.file_dropdown.setEnabled(False)
         self.file_dropdown.currentIndexChanged.connect(self.on_file_selected)
-        top_row.addWidget(file_label)
-        top_row.addWidget(self.file_dropdown)
 
-        bottom_row = QHBoxLayout()
-        sheet_label = QLabel("Sheet name:")
-        sheet_label.setFixedSize(70, 30)
+        sheet_label = QLabel("Sheet Name:")
+        sheet_label.setFixedSize(80, 30)
         self.sheet_dropdown = QComboBox()
         self.sheet_dropdown.setEnabled(False)
         self.sheet_dropdown.currentIndexChanged.connect(self.on_sheet_selected)
-        bottom_row.addWidget(sheet_label)
-        bottom_row.addWidget(self.sheet_dropdown)
+
+        header_label = QLabel("Header Row:")
+        header_label.setFixedSize(80, 30)
+        self.header_input = QLineEdit()
+        self.header_input.setFixedSize(50, 30)
+        self.header_input.setValidator(QIntValidator(1, 99999))
+        self.header_input.setEnabled(False)
+        self.header_input.textChanged.connect(self.on_header_row_change)
+
+        top_row.addWidget(file_label)
+        top_row.addWidget(self.file_dropdown)
+        top_row.addWidget(sheet_label)
+        top_row.addWidget(self.sheet_dropdown)
+        top_row.addWidget(header_label)
+        top_row.addWidget(self.header_input)
 
         file_sheet_layout.addLayout(top_row)
-        file_sheet_layout.addLayout(bottom_row)
         search_tab_layout.addLayout(file_sheet_layout)
 
-        # Search Input
         search_input_layout = QHBoxLayout()
         self.input_search = QLineEdit()
         self.input_search.setPlaceholderText("Enter index to search")
+        self.input_search.setValidator(QIntValidator(1, 9999999))
         self.btn_search = QPushButton("Search")
         self.btn_search.clicked.connect(self.perform_search)
         search_input_layout.addWidget(self.input_search)
         search_input_layout.addWidget(self.btn_search)
         search_tab_layout.addLayout(search_input_layout)
 
-        # Column chips
         self.chip_container_widget = QWidget()
         self.chip_layout = FlowLayout()
         self.chip_container_widget.setLayout(self.chip_layout)
@@ -128,17 +131,14 @@ class ExcelFolderApp(QWidget):
         search_tab.setLayout(search_tab_layout)
         self.tabs.addTab(search_tab, "Search")
 
-        # === Tab 2: Hover Placeholder ===
         hover_tab = QWidget()
         hover_tab_layout = QVBoxLayout()
         hover_tab_layout.addWidget(QLabel("Hover functionality coming soon..."))
         hover_tab.setLayout(hover_tab_layout)
         self.tabs.addTab(hover_tab, "Hover")
 
-        # === Finalize Layout ===
         self.setLayout(main_layout)
 
-        # Load and apply theme
         self.current_theme = load_theme_preference()
         self.apply_theme(self.current_theme)
 
@@ -147,15 +147,20 @@ class ExcelFolderApp(QWidget):
         if not folder:
             return
 
+        self.spinner.start()
+
         self.label_info.setText(f'{folder}')
         self.excel_files.clear()
         self.file_dropdown.clear()
         self.sheet_dropdown.clear()
         self.file_dropdown.setEnabled(False)
         self.sheet_dropdown.setEnabled(False)
+        self.header_input.setEnabled(False)
         self.current_df = None
 
         for file in os.listdir(folder):
+            if file.startswith("~$"):
+                continue  # Skip temporary files
             if file.lower().endswith(('.xlsx', '.xlsm', '.xls')):
                 full_path = os.path.join(folder, file)
                 self.excel_files[file] = full_path
@@ -166,7 +171,7 @@ class ExcelFolderApp(QWidget):
 
         self.file_dropdown.addItems(self.excel_files.keys())
         self.file_dropdown.setEnabled(True)
-        
+        self.spinner.stop()
 
     def on_file_selected(self, index):
         self.sheet_dropdown.clear()
@@ -187,44 +192,44 @@ class ExcelFolderApp(QWidget):
             self.sheet_dropdown.setEnabled(True)
         except Exception as e:
             self.label_info.setText(f'Error loading file: {str(e)}')
-        
+
         self.spinner.stop()
 
     def on_sheet_selected(self, index):
-        
+        self.header_input.setEnabled(False)
+
         self.spinner.start()
         QApplication.processEvents()
         if index < 0:
             return
 
+        self.header_input.setEnabled(True)
+        self.load_header_row()
+        self.spinner.stop()
+        self.load_sheet_with_header(int(self.header_input.text()))
+
+    def load_sheet_with_header(self, header_row):
         filename = self.file_dropdown.currentText()
         file_path = self.excel_files[filename]
         sheet = self.sheet_dropdown.currentText()
-        if not sheet:
-            self.label_info.setText("No sheet selected.")
-            return
 
         try:
-            df = pd.read_excel(file_path, sheet_name=sheet, header=1, engine='openpyxl')
+            df = pd.read_excel(file_path, sheet_name=sheet, header=header_row - 1, engine='openpyxl')
             df.columns = [self.clean_column_name(col) for col in df.columns]
-
-            # Drop columns that are unnamed or fully empty
+            df.columns = df.columns.astype(str)
             df = df.loc[:, ~df.columns.str.contains(r'^Unnamed', case=False)]
-            df = df.dropna(axis=1, how='all')  # optional: remove columns where all rows are NaN
-
+            df = df.dropna(axis=1, how='all')
             self.current_df = df
             self.update_column_scope()
         except Exception as e:
             print(f'Error reading sheet: {str(e)}')
             self.label_info.setText(f'Error reading sheet: {str(e)}')
-        
-        self.spinner.stop()
 
     def clean_column_name(self, name):
         if not isinstance(name, str):
             return name
-        name = name.replace('\n', ' ')             # Replace newline with space
-        name = name.split('*')[0].strip()          # Remove anything after '*'
+        name = name.replace('\n', ' ')
+        name = name.split('*')[0].strip()
         return name
 
     def update_column_scope(self):
@@ -236,7 +241,6 @@ class ExcelFolderApp(QWidget):
         for col in self.shown_columns:
             chip = ColumnChip(col, self.remove_column_from_scope)
             self.chip_layout.addWidget(chip)
-            
 
     def clear_chips(self):
         while self.chip_layout.count():
@@ -276,23 +280,12 @@ class ExcelFolderApp(QWidget):
         if not matches.empty:
             row = matches.iloc[0]
             row_dict = row.to_dict()
-
-            display_dict = {
-                k: v for k, v in row_dict.items()
-                if k in self.shown_columns and pd.notna(v) and str(v).strip() != "" and not all(c.upper() == 'X' for c in str(v).strip())
-            }
-
-
             if not hasattr(self, 'open_result_dialogs'):
                 self.open_result_dialogs = []
-
             dialog = ResultDialog(f"Search Result: {search_term}", row_dict, self.shown_columns)
             dialog.setModal(False)
             dialog.show()
-# Keep a reference
             self.open_result_dialogs.append(dialog)
-
-
         else:
             msg_box = QMessageBox(self)
             msg_box.setWindowTitle("No Match")
@@ -305,16 +298,13 @@ class ExcelFolderApp(QWidget):
         match self.current_theme:
             case "light":
                 self.current_theme = "pink"
-                self.apply_theme("pink")
             case "pink":
                 self.current_theme = "dark"
-                self.apply_theme("dark")
             case "dark":
                 self.current_theme = "light"
-                self.apply_theme("light")
-        
-        
+        self.apply_theme(self.current_theme)
         save_theme_preference(self.current_theme)
+
     def update_theme_icon(self):
         match self.current_theme:
             case "light":
@@ -332,3 +322,19 @@ class ExcelFolderApp(QWidget):
             self.update_theme_icon()
         else:
             print(f"Theme '{theme_name}' not found.")
+
+    def on_header_row_change(self, text):
+        if text.isdigit():
+            self.current_header_row = int(text)
+            fileName = self.file_dropdown.currentText()
+            sheetName = self.sheet_dropdown.currentText()
+            set_header_index(fileName, sheetName, self.current_header_row)
+            self.load_sheet_with_header(self.current_header_row)
+
+    def load_header_row(self):
+        fileName = self.file_dropdown.currentText()
+        sheetName = self.sheet_dropdown.currentText()
+        saved_row = get_header_index(fileName, sheetName)
+        if saved_row:
+            self.current_header_row = saved_row
+        self.header_input.setText(str(self.current_header_row))
