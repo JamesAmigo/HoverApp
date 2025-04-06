@@ -11,7 +11,7 @@ from utilities.resource_utils import load_stylesheet, save_theme_preference, loa
 from pathlib import Path
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QPushButton, QVBoxLayout, QHBoxLayout,
-    QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox
+    QLabel, QFileDialog, QComboBox, QLineEdit, QMessageBox, QTabWidget
 )
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -38,15 +38,11 @@ class ExcelFolderApp(QWidget):
         self.setMinimumWidth(700)
         self.setMinimumHeight(300)
 
-        layout = QVBoxLayout()
+        main_layout = QVBoxLayout()
 
-        # Folder Row (Label + Button + File/Sheet Layout)
+        # --- Folder Row ---
         folder_row = QHBoxLayout()
 
-        self.label_info = QLabel('No folder selected')
-        self.label_info.setMinimumWidth(100)
-        self.label_info.setMaximumWidth(200)
-        folder_row.addWidget(self.label_info)
 
         self.btn_choose_folder = QPushButton('Choose Folder')
         self.btn_choose_folder.setMinimumSize(100, 30)
@@ -54,64 +50,69 @@ class ExcelFolderApp(QWidget):
         self.btn_choose_folder.clicked.connect(self.choose_folder)
         folder_row.addWidget(self.btn_choose_folder)
 
-        # File/Sheet nested layout
-        file_sheet_grid = QVBoxLayout()
 
-        top_row = QHBoxLayout()
-        bottom_row = QHBoxLayout()
+        self.label_info = QLabel('No folder selected')
+        self.label_info.setMinimumWidth(100)
+        self.label_info.setMaximumWidth(200)
+        folder_row.addWidget(self.label_info)
 
-        file_label = QLabel("File name:")
-        file_label.setFixedSize(70, 30)
-        self.file_dropdown = QComboBox()
-        self.file_dropdown.setEnabled(False)
-        self.file_dropdown.currentIndexChanged.connect(self.on_file_selected)
+        self.spinner = LoadingSpinner(self)
+        folder_row.addWidget(self.spinner)
 
-        sheet_label = QLabel("Sheet name:")
-        sheet_label.setFixedSize(70, 30)
-        self.sheet_dropdown = QComboBox()
-        self.sheet_dropdown.setEnabled(False)
-        self.sheet_dropdown.currentIndexChanged.connect(self.on_sheet_selected)
-
-        top_row.addWidget(file_label)
-        top_row.addWidget(self.file_dropdown)
-
-        bottom_row.addWidget(sheet_label)
-        bottom_row.addWidget(self.sheet_dropdown)
-
-        file_sheet_grid.addLayout(top_row)
-        file_sheet_grid.addLayout(bottom_row)
-
-        folder_row.addLayout(file_sheet_grid)
+        folder_row.addStretch()
 
         self.theme_switch = QPushButton("🌙")
         self.theme_switch.setFixedSize(40, 40)
         self.theme_switch.setToolTip("Toggle Light/Dark Theme")
         self.theme_switch.clicked.connect(self.toggle_theme_icon)
         self.theme_switch.setProperty("role", "ThemeSwitch")
-
-        # Apply saved theme
-        self.current_theme = load_theme_preference()
-        self.apply_theme(self.current_theme)
-        self.update_theme_icon()
-
         folder_row.addWidget(self.theme_switch)
 
+        main_layout.addLayout(folder_row)
+        main_layout.addSpacing(10)
 
+        # --- Tab Widget ---
+        self.tabs = QTabWidget()
+        main_layout.addWidget(self.tabs)
 
-        layout.addLayout(folder_row)
+        # === Tab 1: Search Tab ===
+        search_tab = QWidget()
+        search_tab_layout = QVBoxLayout()
 
-        # Spinner
-        self.spinner = LoadingSpinner(self)
-        layout.addWidget(self.spinner)
+        # File/Sheet Dropdowns
+        file_sheet_layout = QVBoxLayout()
 
-        # Search row
-        search_layout = QHBoxLayout()
+        top_row = QHBoxLayout()
+        file_label = QLabel("File name:")
+        file_label.setFixedSize(70, 30)
+        self.file_dropdown = QComboBox()
+        self.file_dropdown.setEnabled(False)
+        self.file_dropdown.currentIndexChanged.connect(self.on_file_selected)
+        top_row.addWidget(file_label)
+        top_row.addWidget(self.file_dropdown)
+
+        bottom_row = QHBoxLayout()
+        sheet_label = QLabel("Sheet name:")
+        sheet_label.setFixedSize(70, 30)
+        self.sheet_dropdown = QComboBox()
+        self.sheet_dropdown.setEnabled(False)
+        self.sheet_dropdown.currentIndexChanged.connect(self.on_sheet_selected)
+        bottom_row.addWidget(sheet_label)
+        bottom_row.addWidget(self.sheet_dropdown)
+
+        file_sheet_layout.addLayout(top_row)
+        file_sheet_layout.addLayout(bottom_row)
+        search_tab_layout.addLayout(file_sheet_layout)
+
+        # Search Input
+        search_input_layout = QHBoxLayout()
         self.input_search = QLineEdit()
         self.input_search.setPlaceholderText("Enter index to search")
         self.btn_search = QPushButton("Search")
         self.btn_search.clicked.connect(self.perform_search)
-        search_layout.addWidget(self.input_search)
-        search_layout.addWidget(self.btn_search)
+        search_input_layout.addWidget(self.input_search)
+        search_input_layout.addWidget(self.btn_search)
+        search_tab_layout.addLayout(search_input_layout)
 
         # Column chips
         self.chip_container_widget = QWidget()
@@ -121,18 +122,33 @@ class ExcelFolderApp(QWidget):
         self.btn_add_column = QPushButton("Add Column")
         self.btn_add_column.clicked.connect(self.show_add_column_dialog)
 
-        layout.addLayout(search_layout)
-        layout.addWidget(self.chip_container_widget)
-        layout.addWidget(self.btn_add_column)
+        search_tab_layout.addWidget(self.chip_container_widget)
+        search_tab_layout.addWidget(self.btn_add_column)
 
-        self.setLayout(layout)
+        search_tab.setLayout(search_tab_layout)
+        self.tabs.addTab(search_tab, "Search")
+
+        # === Tab 2: Hover Placeholder ===
+        hover_tab = QWidget()
+        hover_tab_layout = QVBoxLayout()
+        hover_tab_layout.addWidget(QLabel("Hover functionality coming soon..."))
+        hover_tab.setLayout(hover_tab_layout)
+        self.tabs.addTab(hover_tab, "Hover")
+
+        # === Finalize Layout ===
+        self.setLayout(main_layout)
+
+        # Load and apply theme
+        self.current_theme = load_theme_preference()
+        self.apply_theme(self.current_theme)
+        self.update_theme_icon()
 
     def choose_folder(self):
         folder = QFileDialog.getExistingDirectory(self, 'Select Folder')
         if not folder:
             return
 
-        self.label_info.setText(f'Selected folder: \n{folder}')
+        self.label_info.setText(f'{folder}')
         self.excel_files.clear()
         self.file_dropdown.clear()
         self.sheet_dropdown.clear()

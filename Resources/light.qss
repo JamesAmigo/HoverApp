@@ -15,8 +15,33 @@ QLineEdit,
 QComboBox,
 QListWidget {
     background-color: #ffffff;
-    border: 1px solid #ccc;
+    border: 1px solid #eeeeee;
     padding: 4px;
+}
+/* ===============================
+   🔲 Tabs
+   =============================== */
+QTabWidget::pane {
+    border: 1px solid #eeeeee;
+    padding: 5px;
+}
+QTabBar::tab {
+    background-color: #bbbbbb;
+    color: #333;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    padding: 6px 12px;
+}
+QTabBar::tab:selected {
+    background-color: #eeeeee;
+    color: #222;
+    font-weight: bold;
+}
+QTabBar::tab:hover {
+    background-color: #dddddd;
+    color: #222;
 }
 
 /* ===============================
