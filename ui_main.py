@@ -141,7 +141,6 @@ class ExcelFolderApp(QWidget):
         # Load and apply theme
         self.current_theme = load_theme_preference()
         self.apply_theme(self.current_theme)
-        self.update_theme_icon()
 
     def choose_folder(self):
         folder = QFileDialog.getExistingDirectory(self, 'Select Folder')
@@ -333,7 +332,3 @@ class ExcelFolderApp(QWidget):
             self.update_theme_icon()
         else:
             print(f"Theme '{theme_name}' not found.")
-
-    def handle_theme_toggle(self, value):
-        theme = "dark" if value == 1 else "light"
-        self.apply_theme(theme)
