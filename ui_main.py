@@ -21,6 +21,7 @@ class ExcelFolderApp(QWidget):
     def __init__(self):
         super().__init__()
         self.excel_files = {}
+        self.file_sheets_map = {}
         self.current_df = None
         self.current_header_row = 2
         self.shown_columns = []
@@ -75,7 +76,6 @@ class ExcelFolderApp(QWidget):
         search_tab = QWidget()
         search_tab_layout = QVBoxLayout()
 
-        file_sheet_layout = QVBoxLayout()
 
         top_row = QHBoxLayout()
         file_label = QLabel("File Name:")
@@ -105,8 +105,7 @@ class ExcelFolderApp(QWidget):
         top_row.addWidget(header_label)
         top_row.addWidget(self.header_input)
 
-        file_sheet_layout.addLayout(top_row)
-        search_tab_layout.addLayout(file_sheet_layout)
+        search_tab_layout.addLayout(top_row)
 
         search_input_layout = QHBoxLayout()
         self.input_search = QLineEdit()
@@ -151,8 +150,10 @@ class ExcelFolderApp(QWidget):
 
         self.label_info.setText(f'{folder}')
         self.excel_files.clear()
+        self.file_sheets_map.clear()
         self.file_dropdown.clear()
         self.sheet_dropdown.clear()
+        self.header_input.clear()
         self.file_dropdown.setEnabled(False)
         self.sheet_dropdown.setEnabled(False)
         self.header_input.setEnabled(False)
@@ -164,6 +165,12 @@ class ExcelFolderApp(QWidget):
             if file.lower().endswith(('.xlsx', '.xlsm', '.xls')):
                 full_path = os.path.join(folder, file)
                 self.excel_files[file] = full_path
+                
+                try:
+                    xls = pd.ExcelFile(full_path, engine='openpyxl')
+                    self.file_sheets_map[file] = xls.sheet_names
+                except Exception as e:
+                    print(f"Failed to load sheets for {file}: {e}")
 
         if not self.excel_files:
             self.label_info.setText('No Excel files found in folder.')
@@ -184,15 +191,9 @@ class ExcelFolderApp(QWidget):
             return
 
         filename = self.file_dropdown.currentText()
-        file_path = self.excel_files[filename]
-
-        try:
-            xls = pd.ExcelFile(file_path, engine='openpyxl')
-            self.sheet_dropdown.addItems(xls.sheet_names)
-            self.sheet_dropdown.setEnabled(True)
-        except Exception as e:
-            self.label_info.setText(f'Error loading file: {str(e)}')
-
+        sheets = self.file_sheets_map.get(filename, [])
+        self.sheet_dropdown.addItems(sheets)
+        self.sheet_dropdown.setEnabled(bool(sheets))
         self.spinner.stop()
 
     def on_sheet_selected(self, index):
@@ -282,7 +283,7 @@ class ExcelFolderApp(QWidget):
             row_dict = row.to_dict()
             if not hasattr(self, 'open_result_dialogs'):
                 self.open_result_dialogs = []
-            dialog = ResultDialog(f"Search Result: {search_term}", row_dict, self.shown_columns)
+            dialog = ResultDialog(f"Search Result: {search_term}", row_dict, self.shown_columns, self.excel_files, self.file_sheets_map)
             dialog.setModal(False)
             dialog.show()
             self.open_result_dialogs.append(dialog)
