@@ -312,7 +312,7 @@ class ExcelFolderApp(QWidget):
             case "pink":
                 self.theme_switch.setText("🌙")
             case "dark":
-                self.theme_switch.setText("🔅")
+                self.theme_switch.setText("✨")
 
     def apply_theme(self, theme_name):
         if theme_name in self.themes:
