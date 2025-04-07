@@ -51,6 +51,7 @@ QTabBar::tab:hover {
 QPushButton {
     background-color: #ffbcbc;
     color: #222;
+    font-family: "Segoe UI Emoji";
     border-radius: 6px;
     padding: 6px 12px;
 }
@@ -63,7 +64,7 @@ QPushButton:pressed {
     background-color: #ffa6a6;
 }
 /* ===============================
-   🌙 Theme Toggle Button
+   🌙 Theme Toggle Button (Dark Style)
    =============================== */
 
 QPushButton[role="ThemeSwitch"] {

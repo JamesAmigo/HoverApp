@@ -71,6 +71,7 @@ QPushButton:pressed {
 QPushButton[role="ThemeSwitch"] {
     background-color: #eeeeee;
     color: #222;
+    font-family: "Segoe UI Emoji";
     border-radius: 6px;
     padding: 6px 12px;
 }
