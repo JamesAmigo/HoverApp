@@ -88,8 +88,8 @@ class ResultDialog(QDialog):
             label_key.style().polish(label_key)
 
             label_key.setFixedWidth(150)
-            label_key.setFixedHeight(30)
-            label_value.setFixedHeight(30)
+            label_key.setMinimumHeight(30)
+            label_value.setMinimumHeight(30)
             row.addWidget(label_key)
             row.addWidget(label_value)
             self.content_layout.addLayout(row)
