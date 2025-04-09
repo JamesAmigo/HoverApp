@@ -43,7 +43,6 @@ QTabBar::tab:hover {
     background-color: #ffffc4c4;
     color: #222;
 }
-
 /* ===============================
    🔘 Buttons (Default)
    =============================== */
@@ -51,7 +50,6 @@ QTabBar::tab:hover {
 QPushButton {
     background-color: #ffbcbc;
     color: #222;
-    font-family: "Segoe UI Emoji";
     border-radius: 6px;
     padding: 6px 12px;
 }
@@ -81,7 +79,15 @@ QPushButton[role="ThemeSwitch"]:hover {
 QPushButton[role="ThemeSwitch"]:pressed {
     background-color: #333;
 }
-
+/* ===============================
+   🎫 Column Chip
+   =============================== */
+QPushButton[role="ColumnChip"] {
+    border-radius: 10px;
+    padding: 2px 6px;
+    min-width: 20px;
+    min-height: 20px;
+}
 /* ===============================
    🖱 Scrollbars
    =============================== */

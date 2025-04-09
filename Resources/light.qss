@@ -82,6 +82,15 @@ QPushButton[role="ThemeSwitch"]:hover {
 QPushButton[role="ThemeSwitch"]:pressed {
     background-color: #ffa6a6;
 }
+/* ===============================
+   🎫 Column Chip
+   =============================== */
+QPushButton[role="ColumnChip"] {
+    border-radius: 10px;
+    padding: 2px 6px;
+    min-width: 20px;
+    min-height: 20px;
+}
 
 
 /* ===============================

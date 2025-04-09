@@ -52,7 +52,7 @@ class ExcelFolderApp(QWidget):
 
         self.label_info = QLabel('No folder selected')
         self.label_info.setMinimumWidth(100)
-        self.label_info.setMaximumWidth(200)
+        self.label_info.setMaximumWidth(300)
         folder_row.addWidget(self.label_info)
 
         self.spinner = LoadingSpinner(self)
@@ -147,7 +147,8 @@ class ExcelFolderApp(QWidget):
             return
 
         self.spinner.start()
-
+        QApplication.processEvents()
+        
         self.label_info.setText(f'{folder}')
         self.excel_files.clear()
         self.file_sheets_map.clear()
@@ -158,7 +159,7 @@ class ExcelFolderApp(QWidget):
         self.sheet_dropdown.setEnabled(False)
         self.header_input.setEnabled(False)
         self.current_df = None
-
+    
         for file in os.listdir(folder):
             if file.startswith("~$"):
                 continue  # Skip temporary files

@@ -15,6 +15,7 @@ class ColumnChip(QWidget):
 
         self.remove_btn = QPushButton(str(column_name) +  " ✖")
         self.remove_btn.clicked.connect(self.remove_self)
+        self.remove_btn.setProperty("role", "ColumnChip")
 
         layout.addWidget(self.remove_btn)
         self.setLayout(layout)

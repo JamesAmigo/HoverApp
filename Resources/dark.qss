@@ -84,6 +84,15 @@ QPushButton[role="ThemeSwitch"]:pressed {
     background-color: #bbbbbb;
 }
 /* ===============================
+   🎫 Column Chip
+   =============================== */
+QPushButton[role="ColumnChip"] {
+    border-radius: 10px;
+    padding: 2px 6px;
+    min-width: 20px;
+    min-height: 20px;
+}
+/* ===============================
    🖱 Scrollbars
    =============================== */
 

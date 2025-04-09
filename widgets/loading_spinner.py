@@ -12,6 +12,9 @@ class LoadingSpinner(QLabel):
         layout = QHBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setAlignment(Qt.AlignCenter)
+        
+        self.setMinimumSize(100, 30)
+        self.setMaximumSize(150, 60)
 
         self.label = QLabel("Loading...")
         self.label.setStyleSheet("font-size: 10pt; color: gray;")
