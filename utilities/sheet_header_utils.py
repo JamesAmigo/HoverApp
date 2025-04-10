@@ -15,7 +15,7 @@ def load_header_config():
 def save_header_config(config):
     try:
         with open(HEADER_CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(config, f, indent=2)
+            json.dump(config, f, indent=2, ensure_ascii=False)
     except Exception as e:
         print("Error saving header config:", e)
 
