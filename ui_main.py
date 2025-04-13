@@ -52,10 +52,13 @@ class ExcelFolderApp(QWidget):
 
         folder_row = QHBoxLayout()
         self.btn_choose_folder = QPushButton('Choose Folder')
+        self.btn_choose_folder.setFixedHeight(40)
         self.btn_choose_folder.clicked.connect(self.choose_folder)
         self.label_info = QLabel('No folder selected')
+        self.label_info.setFixedHeight(40)
         self.spinner = LoadingSpinner(self)
         self.theme_switch = QPushButton("🌙")
+        self.theme_switch.setFixedSize(40, 40)
         self.theme_switch.clicked.connect(self.toggle_theme_icon)
         self.theme_switch.setProperty("role", "ThemeSwitch")
 
