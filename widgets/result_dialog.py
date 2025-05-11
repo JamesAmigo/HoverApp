@@ -11,6 +11,8 @@ from widgets.copyable_label import CopyableLabel
 from widgets.sheet_search_bar import SheetSearchBar
 from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match
 from utilities.sheet_header_utils import get_header_index, set_header_index
+from functools import partial
+
 
 
 class ResultDialog(QDialog):
@@ -98,39 +100,54 @@ class ResultDialog(QDialog):
             value_str = str(value)
 
             row = QHBoxLayout()
-            label_key = CopyableLabel(key_str)
-            label_key.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+            btn_key = QPushButton(key_str)
+            btn_key.clicked.connect(partial(self.toggle_column_status, key_str))
+            btn_key.setProperty("role", "key")
+            
 
             label_value = CopyableLabel(value_str)
             label_value.setWordWrap(True)
             label_value.setTextInteractionFlags(Qt.TextSelectableByMouse)
-            label_key.setProperty("role", "key")
             label_value.setProperty("role", "value")
 
             if self.show_all:
                 if key_str not in self.shown_columns:
-                    label_key.setProperty("status", "hidden")
+                    btn_key.setProperty("status", "hidden")
+                    
                 elif (not pd.notna(value)) or value_str.strip() == "" or all(c.upper() == 'X' for c in value_str.strip()):
-                    label_key.setProperty("status", "empty")
+                    btn_key.setProperty("status", "empty")
+                    btn_key.setDisabled(True)
                     label_value.setText("-")
                 else:
-                    label_key.setProperty("status", "normal")
+                    btn_key.setProperty("status", "normal")
             else:
                 if key_str not in self.shown_columns:
                     continue
                 if (not pd.notna(value)) or value_str.strip() == "" or all(c.upper() == 'X' for c in value_str.strip()):
                     continue
-                label_key.setProperty("status", "normal")
+                btn_key.setProperty("status", "normal")
 
-            label_key.style().unpolish(label_key)
-            label_key.style().polish(label_key)
+            btn_key.style().unpolish(btn_key)
+            btn_key.style().polish(btn_key)
+            btn_key.setFixedWidth(150)
+            btn_key.setMinimumHeight(30)
 
-            label_key.setFixedWidth(150)
-            label_key.setMinimumHeight(30)
+            label_value.style().unpolish(label_value)
+            label_value.style().polish(label_value)
+            label_value.setFixedWidth(200)
             label_value.setMinimumHeight(30)
-            row.addWidget(label_key)
+
+            row.addWidget(btn_key)
             row.addWidget(label_value)
             self.content_layout.addLayout(row)
+
+    def toggle_column_status(self, col):
+        if col in self.shown_columns:
+            self.shown_columns.remove(col)
+        else:
+            self.shown_columns.append(col)
+        self.render_content()
 
     def toggle_all_fields(self):
         self.show_all = not self.show_all

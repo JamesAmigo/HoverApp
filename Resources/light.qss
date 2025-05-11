@@ -107,34 +107,48 @@ QScrollBar:vertical {
    =============================== */
 
 /* Result Dialog Columns */
-QLabel[role="key"][status="normal"] {
+QPushButton[role="key"][status="normal"] {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ccc;
-    padding: 4px;
+    padding: 8px;
     border-radius: 6px;
-    background-color: #f2f2f2;
 }
 
 /* Result Dialog Columns that is not chosen (Hidden) */
-QLabel[role="key"][status="hidden"] {
+QPushButton[role="key"][status="hidden"] {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ccc;
     color: gray;
-    background-color: transparent;
-    padding: 4px;
+    background-color: #dbdbdb;
+    padding: 8px;
+    border-radius: 6px;
+}
+QPushButton[role="key"][status="hidden"]:hover {
+    font-weight: bold;
+    font-size: 10pt;
+    color: gray;
+    background-color: #eeeeee;
+    padding: 8px;
     border-radius: 6px;
 }
 
-/* Result Dialog Columns with empty value */
-QLabel[role="key"][status="empty"] {
+QPushButton[role="key"][status="hidden"]:pressed {
     font-weight: bold;
     font-size: 10pt;
-    border: 1px solid #ccc;
+    color: gray;
+    background-color: #bebebe;
+    padding: 8px;
+    border-radius: 6px;
+}
+
+
+/* Result Dialog Columns with empty value */
+QPushButton[role="key"][status="empty"] {
+    font-weight: bold;
+    font-size: 10pt;
     color: white;
     background-color: #868686;
-    padding: 4px;
+    padding: 8px;
     border-radius: 6px;
 }
 
