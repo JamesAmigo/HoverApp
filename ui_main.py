@@ -23,7 +23,7 @@ class ExcelFolderApp(QWidget):
         super().__init__()
         self.excel_files = {}
         self.file_sheets_map = {}
-        self.current_df = None
+        self.current_sheet = None
         self.current_header_row = 2
         self.shown_columns = []
         self.current_theme = load_theme_preference()
@@ -106,7 +106,7 @@ class ExcelFolderApp(QWidget):
 
         self.excel_files.clear()
         self.file_sheets_map.clear()
-        self.current_df = None
+        self.current_sheet = None
 
         for file in os.listdir(folder):
             if file.startswith("~$") or not file.lower().endswith((".xlsx", ".xlsm", ".xls")):
@@ -156,15 +156,15 @@ class ExcelFolderApp(QWidget):
         try:
             df = load_excel_sheet(file_path, sheet, header_row)
             df.columns = [clean_column_name(col) for col in df.columns]
-            self.current_df = df
+            self.current_sheet = df
             self.update_column_scope()
         except Exception as e:
             self.label_info.setText(f'Error reading sheet: {str(e)}')
 
     def update_column_scope(self):
-        if self.current_df is None:
+        if self.current_sheet is None:
             return
-        self.shown_columns = list(self.current_df.columns)
+        self.shown_columns = list(self.current_sheet.columns)
         self.clear_chips()
         for col in self.shown_columns:
             chip = ColumnChip(col, self.remove_column_from_scope)
@@ -181,9 +181,9 @@ class ExcelFolderApp(QWidget):
             self.shown_columns.remove(column_name)
 
     def show_add_column_dialog(self):
-        if self.current_df is None:
+        if self.current_sheet is None:
             return
-        remaining = [col for col in self.current_df.columns if col not in self.shown_columns]
+        remaining = [col for col in self.current_sheet.columns if col not in self.shown_columns]
         dialog = AddColumnDialog(remaining, self.add_column_to_scope)
         dialog.exec_()
 
@@ -194,7 +194,7 @@ class ExcelFolderApp(QWidget):
             self.chip_layout.addWidget(chip)
 
     def perform_search(self):
-        if self.current_df is None or self.current_df.empty:
+        if self.current_sheet is None or self.current_sheet.empty:
             return
 
         selection = self.sheet_search_bar.get_selection()
@@ -202,7 +202,7 @@ class ExcelFolderApp(QWidget):
         if not search_term:
             return
 
-        match = get_first_match(self.current_df, search_term)
+        match = get_first_match(self.current_sheet, search_term)
         if match is not None:
             row_dict = match.to_dict()
             dialog = ResultDialog(

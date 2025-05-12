@@ -7,6 +7,7 @@ from PyQt5.QtCore import pyqtSignal
 
 
 class SheetSearchBar(QWidget):
+    # creates signals
     searchRequested = pyqtSignal()
     fileChanged = pyqtSignal(str)
     sheetChanged = pyqtSignal(str)
@@ -14,7 +15,8 @@ class SheetSearchBar(QWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-
+        
+        # Main Layout
         self.layout = QVBoxLayout()
         self.setLayout(self.layout)
 
@@ -57,6 +59,7 @@ class SheetSearchBar(QWidget):
 
     # --- Public Methods ---
 
+    # Returns current state of the seach bar as a dict
     def get_selection(self):
         return {
             "file": self.file_dropdown.currentText(),
@@ -65,7 +68,8 @@ class SheetSearchBar(QWidget):
             "index": self.search_input.text().strip()
         }
 
-    def set_files_and_sheets(self, excel_files, file_sheets_map, selected_file=None, selected_sheet=None):
+    # Updates the file and sheet dropdowns
+    def set_files_and_sheets(self, excel_files, file_sheets_dict, selected_file=None, selected_sheet=None):
         self.file_dropdown.blockSignals(True)
         self.sheet_dropdown.blockSignals(True)
 
@@ -77,28 +81,31 @@ class SheetSearchBar(QWidget):
         file = selected_file or next(iter(excel_files), "")
         self.file_dropdown.setCurrentText(file)
 
-        if file in file_sheets_map:
-            self.sheet_dropdown.addItems(file_sheets_map[file])
-            sheet = selected_sheet or file_sheets_map[file][0]
+        if file in file_sheets_dict:
+            self.sheet_dropdown.addItems(file_sheets_dict[file])
+            sheet = selected_sheet or file_sheets_dict[file][0]
             self.sheet_dropdown.setCurrentText(sheet)
 
         self.file_dropdown.blockSignals(False)
         self.sheet_dropdown.blockSignals(False)
 
-        # ⬇️ Explicitly emit signals to reflect current state
+        # After updating the dropdowns, emit the changed signals so that other widgets can call the functions they need
         self._emit_file_changed()
         self._emit_sheet_changed()
         self._emit_header_changed()
 
 
+    # Sets the header row
     def set_header_row(self, row):
         self.header_input.setText(str(row))
 
+    # Sets the index value
     def set_index_value(self, value):
         self.search_input.setText(str(value))
 
     # --- Private Emitters ---
-
+    # Emits need to emit with arguments that match the receiving functions
+    
     def _emit_file_changed(self):
         self.fileChanged.emit(self.file_dropdown.currentText())
 
