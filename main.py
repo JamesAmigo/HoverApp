@@ -7,7 +7,7 @@ from PyQt5.QtGui import QIcon
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(get_resource_path("Resources/icon.ico")))
+    app.setWindowIcon(QIcon(get_resource_path(r"Resources/icon.ico")))
     app.setFont(QFont("微軟正黑體", 10))
     window = ExcelFolderApp()
     window.show()

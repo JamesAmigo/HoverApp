@@ -3,7 +3,7 @@ import os
 from utilities.resource_utils import get_resource_path
 
 def load_fonts_from_folder():
-    fonts_dir = get_resource_path("Resources/Fonts")
+    fonts_dir = get_resource_path(r"Resources/Fonts")
     loaded_fonts = []
 
     if not os.path.exists(fonts_dir):

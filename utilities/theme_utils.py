@@ -2,10 +2,20 @@ import os
 import sys
 from pathlib import Path
 import json
-from utilities.resource_utils import get_config_dir
+from utilities.resource_utils import get_config_dir, get_resource_path
 
 # Use user's AppData or home directory
 THEME_CONFIG_PATH = os.path.join(get_config_dir(), "theme_config.json")
+RESOURCES_PATH = get_resource_path(r"Resources\Stylesheets")
+
+def load_themes():
+    themes = {}
+    for filename in os.listdir(RESOURCES_PATH):
+        if filename.endswith(".qss"):
+            theme_name = filename.split(".")[0]
+            full_path = os.path.join(RESOURCES_PATH, filename)
+            themes[theme_name] = load_stylesheet(full_path)
+    return themes
 
 def load_stylesheet(path):
     try:

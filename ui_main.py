@@ -13,7 +13,7 @@ from widgets.column_chip import ColumnChip
 from widgets.result_dialog import ResultDialog
 from widgets.sheet_search_bar import SheetSearchBar
 
-from utilities.theme_utils import load_stylesheet, save_theme_preference, load_theme_preference
+from utilities.theme_utils import load_themes, save_theme_preference, load_theme_preference
 from utilities.sheet_header_utils import get_header_index, set_header_index
 from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match, get_saved_header_row
 
@@ -30,19 +30,12 @@ class ExcelFolderApp(QWidget):
         self.open_result_dialogs = []
 
 
-        self.themes = self.load_themes()
+        self.themes = load_themes()
         self.init_ui()
         self.apply_theme(self.current_theme)
 
-    def load_themes(self):
-        themes = {}
-        resources_path = os.path.join(os.path.dirname(__file__), "Resources")
-        for filename in os.listdir(resources_path):
-            if filename.endswith(".qss"):
-                theme_name = filename.split(".")[0]
-                full_path = os.path.join(resources_path, filename)
-                themes[theme_name] = load_stylesheet(full_path)
-        return themes
+
+
 
     def init_ui(self):
         self.setWindowTitle('Excel Folder Search Tool')

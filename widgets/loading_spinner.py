@@ -25,7 +25,7 @@ class LoadingSpinner(QLabel):
         self.spinner.setStyleSheet("background: transparent;")
         self.spinner.setVisible(False)
 
-        spinner_path = get_resource_path("Resources/spinner.gif")
+        spinner_path = get_resource_path(r"Resources\Pics\spinner.gif")
         self.movie = QMovie(spinner_path)
 
         self.movie.setScaledSize(QSize(24, 24))
