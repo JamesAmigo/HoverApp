@@ -1,21 +1,12 @@
 import os
 import sys
-from pathlib import Path
 import json
+from PyQt5.QtWidgets import QApplication
 from utilities.resource_utils import get_config_dir, get_resource_path
 
-# Use user's AppData or home directory
 THEME_CONFIG_PATH = os.path.join(get_config_dir(), "theme_config.json")
-RESOURCES_PATH = get_resource_path(r"Resources\Stylesheets")
-
-def load_themes():
-    themes = {}
-    for filename in os.listdir(RESOURCES_PATH):
-        if filename.endswith(".qss"):
-            theme_name = filename.split(".")[0]
-            full_path = os.path.join(RESOURCES_PATH, filename)
-            themes[theme_name] = load_stylesheet(full_path)
-    return themes
+RESOURCES_PATH = get_resource_path("Resources/Stylesheets")
+_theme_cache = None  # Internal lazy cache
 
 def load_stylesheet(path):
     try:
@@ -24,6 +15,18 @@ def load_stylesheet(path):
     except Exception as e:
         print(f"Failed to load stylesheet {path}: {e}")
         return ""
+
+def get_all_themes():
+    global _theme_cache
+    if _theme_cache is None:
+        _theme_cache = {}
+        for filename in os.listdir(RESOURCES_PATH):
+            if filename.endswith(".qss"):
+                theme_name = filename.split(".")[0]
+                full_path = os.path.join(RESOURCES_PATH, filename)
+                _theme_cache[theme_name] = load_stylesheet(full_path)
+    return _theme_cache
+
 
 def save_theme_preference(theme_name):
     try:
@@ -39,3 +42,25 @@ def load_theme_preference():
             return data.get("theme", "light")
     except:
         return "light"
+
+def get_next_theme(current_theme):
+    return {
+        "light": "pink",
+        "pink": "dark",
+        "dark": "light"
+    }.get(current_theme, "light")
+def get_theme_icon(theme_name):
+    icon_map = {
+        "light": "🌸",
+        "pink": "🌙",
+        "dark": "💥"
+    }
+    return icon_map.get(theme_name, "🌸")
+
+def apply_theme(theme_name):
+    themes = get_all_themes()
+    if theme_name in themes:
+        QApplication.instance().setStyleSheet(themes[theme_name])
+        save_theme_preference(theme_name)
+        return theme_name
+    return None

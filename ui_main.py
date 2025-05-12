@@ -13,7 +13,7 @@ from widgets.column_chip import ColumnChip
 from widgets.result_dialog import ResultDialog
 from widgets.sheet_search_bar import SheetSearchBar
 
-from utilities.theme_utils import load_themes, save_theme_preference, load_theme_preference
+from utilities.theme_utils import load_theme_preference, apply_theme, get_next_theme, get_theme_icon
 from utilities.sheet_header_utils import get_header_index, set_header_index
 from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match, get_saved_header_row
 
@@ -30,9 +30,9 @@ class ExcelFolderApp(QWidget):
         self.open_result_dialogs = []
 
 
-        self.themes = load_themes()
         self.init_ui()
-        self.apply_theme(self.current_theme)
+        apply_theme(self.current_theme)
+        self.update_theme_switch(self.current_theme)
 
 
 
@@ -222,27 +222,13 @@ class ExcelFolderApp(QWidget):
             QMessageBox.information(self, "No Match", f"No match found for: {search_term}")
 
     def toggle_theme_icon(self):
-        next_theme = {
-            "light": "pink",
-            "pink": "dark",
-            "dark": "light"
-        }.get(self.current_theme, "light")
-        self.apply_theme(next_theme)
+        next_theme = get_next_theme(self.current_theme)
+        if apply_theme(next_theme):
+            self.current_theme = next_theme
+            self.update_theme_switch(self.current_theme)
+    def update_theme_switch(self, theme_name):
+        self.theme_switch.setText(get_theme_icon(theme_name))
 
-    def apply_theme(self, theme_name):
-        if theme_name in self.themes:
-            QApplication.instance().setStyleSheet(self.themes[theme_name])
-            self.current_theme = theme_name
-            save_theme_preference(theme_name)
-            self.update_theme_icon()
-
-    def update_theme_icon(self):
-        icon_map = {
-            "light": "🌸",
-            "pink": "🌙",
-            "dark": "💥"
-        }
-        self.theme_switch.setText(icon_map.get(self.current_theme, "✨"))
 
     def on_header_row_change(self, row):
         self.current_header_row = row
