@@ -24,18 +24,13 @@ class ExcelFolderApp(QWidget):
         self.excel_files = {}
         self.file_sheets_map = {}
         self.current_sheet = None
-        self.current_header_row = 2
         self.shown_columns = []
         self.current_theme = load_theme_preference()
         self.open_result_dialogs = []
 
-
         self.init_ui()
         apply_theme(self.current_theme)
         self.update_theme_switch(self.current_theme)
-
-
-
 
     def init_ui(self):
         self.setWindowTitle('Excel Folder Search Tool')
@@ -128,9 +123,8 @@ class ExcelFolderApp(QWidget):
 
         saved = get_saved_header_row(default_file, self.file_sheets_map[default_file][0])
         if saved:
-            self.current_header_row = saved
-        self.sheet_search_bar.set_header_row(self.current_header_row)
-        self.load_sheet_with_header(self.current_header_row)
+            self.sheet_search_bar.set_header_row(saved)
+        self.load_sheet_with_header()
         self.spinner.stop()
 
     def on_file_selected(self, file):
@@ -144,13 +138,13 @@ class ExcelFolderApp(QWidget):
         if not sheet_name:
             return
         self.load_header_row()
-        selection = self.sheet_search_bar.get_selection()
-        self.load_sheet_with_header(selection["header"])
+        self.load_sheet_with_header()
 
-    def load_sheet_with_header(self, header_row):
+    def load_sheet_with_header(self):
         selection = self.sheet_search_bar.get_selection()
         file = selection["file"]
         sheet = selection["sheet"]
+        header_row = selection["header"]
         file_path = self.excel_files.get(file)
 
         try:
@@ -197,8 +191,7 @@ class ExcelFolderApp(QWidget):
         if self.current_sheet is None or self.current_sheet.empty:
             return
 
-        selection = self.sheet_search_bar.get_selection()       
-
+        selection = self.sheet_search_bar.get_selection()
         search_term = selection["index"]
         if not search_term:
             return
@@ -217,8 +210,7 @@ class ExcelFolderApp(QWidget):
             )
             dialog.setModal(False)
             dialog.show()
-            self.open_result_dialogs.append(dialog)  # 👈 Keep reference
-
+            self.open_result_dialogs.append(dialog)
         else:
             QMessageBox.information(self, "No Match", f"No match found for: {search_term}")
 
@@ -227,19 +219,17 @@ class ExcelFolderApp(QWidget):
         if apply_theme(next_theme):
             self.current_theme = next_theme
             self.update_theme_switch(self.current_theme)
+
     def update_theme_switch(self, theme_name):
         self.theme_switch.setText(get_theme_icon(theme_name))
 
-
     def on_header_row_change(self, row):
-        self.current_header_row = row
         selection = self.sheet_search_bar.get_selection()
         set_header_index(selection["file"], selection["sheet"], row)
-        self.load_sheet_with_header(row)
+        self.load_sheet_with_header()
 
     def load_header_row(self):
         selection = self.sheet_search_bar.get_selection()
         saved = get_saved_header_row(selection["file"], selection["sheet"])
         if saved:
-            self.current_header_row = saved
-        self.sheet_search_bar.set_header_row(self.current_header_row)
+            self.sheet_search_bar.set_header_row(saved)
