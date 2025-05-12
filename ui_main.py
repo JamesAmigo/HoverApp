@@ -15,7 +15,7 @@ from widgets.sheet_search_bar import SheetSearchBar
 
 from utilities.theme_utils import load_theme_preference, apply_theme, get_next_theme, get_theme_icon
 from utilities.sheet_header_utils import get_header_index, set_header_index
-from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match, get_saved_header_row
+from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match, get_saved_header_row, get_row_dict
 
 
 class ExcelFolderApp(QWidget):
@@ -154,9 +154,9 @@ class ExcelFolderApp(QWidget):
         file_path = self.excel_files.get(file)
 
         try:
-            df = load_excel_sheet(file_path, sheet, header_row)
-            df.columns = [clean_column_name(col) for col in df.columns]
-            self.current_sheet = df
+            excel_sheet = load_excel_sheet(file_path, sheet, header_row)
+            excel_sheet.columns = [clean_column_name(col) for col in excel_sheet.columns]
+            self.current_sheet = excel_sheet
             self.update_column_scope()
         except Exception as e:
             self.label_info.setText(f'Error reading sheet: {str(e)}')
@@ -197,7 +197,8 @@ class ExcelFolderApp(QWidget):
         if self.current_sheet is None or self.current_sheet.empty:
             return
 
-        selection = self.sheet_search_bar.get_selection()
+        selection = self.sheet_search_bar.get_selection()       
+
         search_term = selection["index"]
         if not search_term:
             return

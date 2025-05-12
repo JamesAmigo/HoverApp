@@ -9,7 +9,7 @@ from PyQt5.QtCore import Qt
 
 from widgets.copyable_label import CopyableLabel
 from widgets.sheet_search_bar import SheetSearchBar
-from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match
+from utilities.sheet_load_utils import load_excel_sheet, clean_column_name, get_first_match, get_row_dict
 from utilities.sheet_header_utils import get_header_index, set_header_index
 from functools import partial
 
@@ -27,7 +27,6 @@ class ResultDialog(QDialog):
         self.excel_files = excel_files
         self.file_sheets_map = file_sheets_map
         self.show_all = False
-        self.current_df = None
 
 
         self.main_layout = QVBoxLayout()
@@ -70,28 +69,11 @@ class ResultDialog(QDialog):
         index_value = selection["index"]
         header_row = selection["header"]
         file_path = self.excel_files.get(file)
-
-        if not file_path or not index_value:
-            return
-
-        try:
-            df = load_excel_sheet(file_path, sheet, header_row)
-            df.columns = [clean_column_name(col) for col in df.columns]
-            self.current_df = df
-            match = get_first_match(df, index_value)
-            if match is not None:
-                self.row_dict = match.to_dict()
-            else:
-                self.row_dict = {}
-                self.search_bar.search_input.setPlaceholderText("No match found")
-        except Exception as e:
-            self.row_dict = {}
-            print(f"Search error: {e}")
-            self.search_bar.search_input.setPlaceholderText("Error reading data")
-
+        self.row_dict = get_row_dict(file_path, sheet, header_row, index_value)
         self.render_content()
 
     def render_content(self):
+        self.setWindowTitle(f"{self.search_bar.get_selection()['sheet']}: {self.search_bar.get_selection()['index']}")
         self.clear_layout(self.content_layout)
         self.content_layout.setAlignment(Qt.AlignTop)
 
